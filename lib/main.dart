@@ -58,7 +58,6 @@ class _MyHomePageState extends State<MyHomePage> {
   double myFontSize = 30.0;
 
 
-
   void _incrementCounter() {
     setState(() {
       // This call to setState tells the Flutter framework that something has
@@ -69,8 +68,11 @@ class _MyHomePageState extends State<MyHomePage> {
       _counter += 1.0;
     });
   }
+
+
   void setNewValue(double newValue) {
     setState(() {
+      _counter = newValue;
       myFontSize = newValue;
     });
   }
@@ -88,7 +90,10 @@ class _MyHomePageState extends State<MyHomePage> {
         // TRY THIS: Try changing the color here to a specific color (to
         // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
         // change color while the other colors stay the same.
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        backgroundColor: Theme
+            .of(context)
+            .colorScheme
+            .inversePrimary,
         // Here we take the value from the MyHomePage object that was created by
         // the App.build method, and use it to set our appbar title.
         title: Text(widget.title),
@@ -113,21 +118,29 @@ class _MyHomePageState extends State<MyHomePage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
-              'You have pushed the button this many times:',
+              'You have pushed the button this many times:\n$_counter',
               style: TextStyle(fontSize: myFontSize),
-            ),Slider(
-        min: 10.0,
-        max: 100.0,
-        value: myFontSize,
-        onChanged: setNewValue,),
-          ],
+            ),
+
+        Slider(
+          min: 10.0,
+          max: 100.0,
+          value: _counter,
+          onChanged: setNewValue,
+
         ),
+        ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ),
+    ),
+    floatingActionButton: FloatingActionButton(
+    onPressed: _incrementCounter,
+    tooltip: 'Increment',
+    child: const Icon(Icons.
+    add
+    )
+    ,
+    )
+    ,
     );
   }
 }
