@@ -54,7 +54,10 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+  var _counter = 0.0;
+  double myFontSize = 30.0;
+
+
 
   void _incrementCounter() {
     setState(() {
@@ -63,7 +66,12 @@ class _MyHomePageState extends State<MyHomePage> {
       // so that the display can reflect the updated values. If we changed
       // _counter without calling setState(), then the build method would not be
       // called again, and so nothing would appear to happen.
-      _counter++;
+      _counter += 1.0;
+    });
+  }
+  void setNewValue(double newValue) {
+    setState(() {
+      myFontSize = newValue;
     });
   }
 
@@ -102,13 +110,17 @@ class _MyHomePageState extends State<MyHomePage> {
           // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
           // action in the IDE, or press "p" in the console), to see the
           // wireframe for each widget.
-          mainAxisAlignment: .center,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text('You have pushed the button this many times:'),
+            Text('You have pushed the button this many times:'),
             Text(
               '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
+              style: TextStyle(fontSize: myFontSize),
+            ), Slider(
+        min: 10.0,
+        max: 100.0,
+        value: myFontSize,
+        onChanged: setNewValue,),
           ],
         ),
       ),
