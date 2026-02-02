@@ -10,10 +10,10 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Flutter Login Demo',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-
+        useMaterial3: true,
       ),
       home: const MyHomePage(title: 'Flutter Demo Home Page'),
     );
@@ -22,7 +22,6 @@ class MyApp extends StatelessWidget {
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
-
   final String title;
 
   @override
@@ -30,51 +29,59 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  var _counter = 0.0;
-  double myFontSize = 30.0;
+  final loginController = TextEditingController();
+  final passwordController = TextEditingController();
 
-  void _incrementCounter() {
+  String imageSource = "images/question-mark.png"; // 默认问号图
+
+  void handleLogin() {
+    String password = passwordController.text.trim();
+
     setState(() {
-      _counter += 1.0;
+      if (password == 'ASDF') {
+        imageSource = "images/idea.png";
+      } else {
+        imageSource = "images/stop.png";
+      }
     });
   }
-
-  void setNewValue(dynamic newValue) {
-    setState(() {
-      _counter = newValue.toDouble();
-      myFontSize = newValue.toDouble();
-    });
-  }
-
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text(widget.title),
       ),
-      body: Center(
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(
-              'You have pushed the button this many times:\n$_counter',
-              style: TextStyle(fontSize: myFontSize),
+            TextField(
+              controller: loginController,
+              decoration: const InputDecoration(labelText: 'Login'),
             ),
-            Slider(
-              min: 0.0,
-              max: 100.0,
-              value: _counter,
-              onChanged: setNewValue,
+            TextField(
+              controller: passwordController,
+              obscureText: true,
+              decoration: const InputDecoration(labelText: 'Password'),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: handleLogin,
+              child: const Text('Login'),
+            ),
+            const SizedBox(height: 20),
+            Semantics(
+              label: 'Login result image',
+              child: Image.asset(
+                imageSource,
+                width: 300,
+                height: 300,
+                fit: BoxFit.contain,
+              ),
             ),
           ],
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
       ),
     );
   }
