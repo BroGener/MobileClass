@@ -1,14 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
-void main() {
-  runApp(const MyApp());
-}
 
 
+class Lab4App extends StatelessWidget {
+  const Lab4App({super.key});
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
