@@ -33,10 +33,12 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   final TextEditingController _loginController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final FlutterSecureStorage secureStorage = const FlutterSecureStorage(
+    aOptions: AndroidOptions(encryptedSharedPreferences: true),
+  );
 
 
-  final FlutterSecureStorage secureStorage =
-  const FlutterSecureStorage();
+
 
   String imageSource = "images/question-mark.png";
 
