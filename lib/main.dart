@@ -16,130 +16,199 @@ class MyApp extends StatelessWidget {
   }
 }
 
+import 'package:flutter/material.dart';
 
-
-class Lab4 extends StatefulWidget {
-  const Lab4({super.key});
+class Lab6 extends StatefulWidget {
+  const Lab6({super.key});
 
   @override
-  State<Lab4> createState() => _Lab4State();
+  State<Lab6> createState() => _Lab6State();
 }
 
-class _Lab4State extends State<Lab4> {
-  final loginController = TextEditingController();
-  final passwordController = TextEditingController();
-  final EncSharedPref _encryptedData = EncSharedPref();
+class _Lab6State extends State<Lab6> {
 
-  String imageSource = "images/question-mark.png";
+  final TextEditingController itemController = TextEditingController();
+  final TextEditingController quantityController = TextEditingController();
 
-  @override
-  void initState() {
-    super.initState();
-    _loadCredentials();
-  }
+  List<Map<String, String>> shoppingList = [];
 
-  // 加载数据逻辑
-  Future<void> _loadCredentials() async {
-    String? savedUser = await _encryptedData.get('username');
-    String? savedPass = await _encryptedData.get('password');
+  void addItem() {
 
-    if (savedUser != null && savedPass != null && savedUser.isNotEmpty && savedPass.isNotEmpty) {
-      if (mounted) { // 检查组件是否还在树中
-        setState(() {
-          loginController.text = savedUser;
-          passwordController.text = savedPass;
-        });
+    String item = itemController.text.trim();
+    String quantity = quantityController.text.trim();
 
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Previous login name and passwords have been loaded.'),
-            ),
-          );
-        });
-      }
+    if(item.isEmpty || quantity.isEmpty){
+      return;
     }
-  }
 
-  // 弹窗逻辑
-  void _handleLogin() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text("Save Credentials?"),
-          content: const Text("Would you like to save your username and password?"),
-          actions: [
-            TextButton(
-              onPressed: () async {
-                await _encryptedData.clear();
-                if (mounted) Navigator.of(context).pop();
-                _updateResultImage();
-              },
-              child: const Text("No"),
-            ),
-            TextButton(
-              onPressed: () async {
-                await _encryptedData.set('username', loginController.text);
-                await _encryptedData.set('password', passwordController.text);
-                if (mounted) Navigator.of(context).pop();
-                _updateResultImage();
-              },
-              child: const Text("Yes"),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  void _updateResultImage() {
-    String password = passwordController.text.trim();
     setState(() {
-      if (password == 'ASDF') {
-        imageSource = "images/idea.png";
-      } else {
-        imageSource = "images/stop.png";
-      }
+      shoppingList.add({
+        "item": item,
+        "quantity": quantity
+      });
     });
+
+    itemController.clear();
+    quantityController.clear();
+  }
+
+  void deleteItem(int index){
+
+    showDialog(
+        context: context,
+        builder: (context){
+          return AlertDialog(
+            title: const Text("Delete Item"),
+            content: const Text("Do you want to delete this item?"),
+            actions: [
+
+              TextButton(
+                onPressed: (){
+                  Navigator.pop(context);
+                },
+                child: const Text("No"),
+              ),
+
+              TextButton(
+                onPressed: (){
+                  setState(() {
+                    shoppingList.removeAt(index);
+                  });
+                  Navigator.pop(context);
+                },
+                child: const Text("Yes"),
+              )
+
+            ],
+          );
+        }
+    );
+
   }
 
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
+
       appBar: AppBar(
-        title: const Text("Week 4 Lab"), // 这里直接写死标题即可
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        title: const Text("Flutter Demo Home Page"),
+        backgroundColor: Colors.deepPurple[200],
       ),
+
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              TextField(
-                controller: loginController,
-                decoration: const InputDecoration(labelText: 'Login'),
+        padding: const EdgeInsets.all(20),
+        child: Column(
+
+          children: [
+
+            /// INPUT ROW
+            Row(
+              children: [
+
+                Expanded(
+                  flex: 3,
+                  child: TextField(
+                    controller: itemController,
+                    decoration: InputDecoration(
+                      hintText: "Type the item here",
+                      filled: true,
+                      fillColor: Colors.grey[200],
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(width: 10),
+
+                Expanded(
+                  flex: 3,
+                  child: TextField(
+                    controller: quantityController,
+                    keyboardType: TextInputType.number,
+                    decoration: InputDecoration(
+                      hintText: "Type the quantity here",
+                      filled: true,
+                      fillColor: Colors.grey[200],
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(width: 10),
+
+                ElevatedButton(
+                  onPressed: addItem,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.deepPurple[200],
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                  ),
+                  child: const Text("Click here"),
+                )
+
+              ],
+            ),
+
+            const SizedBox(height: 30),
+
+            /// LIST
+            Expanded(
+              child: shoppingList.isEmpty
+                  ? const Center(
+                child: Text(
+                  "There are no items in the list",
+                  style: TextStyle(fontSize: 18),
+                ),
+              )
+                  : ListView.builder(
+
+                itemCount: shoppingList.length,
+
+                itemBuilder: (context, index){
+
+                  var item = shoppingList[index];
+
+                  return GestureDetector(
+
+                    onLongPress: (){
+                      deleteItem(index);
+                    },
+
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 5),
+
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+
+                          Text(
+                            "${index + 1}: ${item["item"]}",
+                            style: const TextStyle(fontSize: 18),
+                          ),
+
+                          const SizedBox(width: 10),
+
+                          Text(
+                            "quantity: ${item["quantity"]}",
+                            style: const TextStyle(fontSize: 18),
+                          ),
+
+                        ],
+                      ),
+                    ),
+                  );
+
+                },
               ),
-              TextField(
-                controller: passwordController,
-                obscureText: true,
-                decoration: const InputDecoration(labelText: 'Password'),
-              ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: _handleLogin,
-                child: const Text('Login'),
-              ),
-              const SizedBox(height: 20),
-              Image.asset(
-                imageSource,
-                width: 300,
-                height: 300,
-                errorBuilder: (context, error, stackTrace) =>
-                const Icon(Icons.image_not_supported, size: 100),
-              ),
-            ],
-          ),
+            )
+
+          ],
         ),
       ),
     );
