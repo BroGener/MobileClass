@@ -33,9 +33,9 @@ class MyApp extends StatelessWidget {
         //
         // This works for code too, not just values: Most code changes can be
         // tested with just a hot reload.
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blueAccent),
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: const MyHomePage(title: 'Flutter Demo Lab7 Home Page'),
     );
   }
 }
@@ -65,7 +65,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Item? selectedItem = null;//nothing is selected
 
   late ItemDAO itemDAO;
-
+  late TextEditingController _quantityController;
   var isChecked = false;
   var myFontSize = 0.0;
   late TextEditingController _controller; //late means promise to initialize it later
@@ -74,30 +74,29 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
-    _controller = TextEditingController(); //doing your promise to initialize
 
-    //want to load any existing data into the arraylist
-    //to open the database:
+    _controller = TextEditingController();
+    _quantityController = TextEditingController();
 
     $FloorItemDatabase.databaseBuilder('ItemFile.db').build()
-        .then( (database){
+        .then((database) {
       itemDAO = database.myDAO;
 
-      //query all data:
-      itemDAO.getAllItems().then( (listOfItems ) {
-        setState(() { //redraw the GUI
-          list1.addAll(listOfItems); //put the items in the list:
+      itemDAO.getAllItems().then((listOfItems) {
+        setState(() {
+          list1.addAll(listOfItems);
         });
       });
-    }  );
+    });
   }
-
   //you are being removed
   @override
   void dispose() {
-    super.dispose();
+
     //free memory:
     _controller.dispose();
+    _quantityController.dispose();
+    super.dispose();
   }
 
 
@@ -131,29 +130,36 @@ class _MyHomePageState extends State<MyHomePage> {
 
 
 
-    if( (width>height) && (width > 720)) {
-      //tablet
+    if( (width>height) && (width > 480)) {
+      //tablet landscape
+
       return Row( children:[
-        Expanded(child: ListPage(),    flex:2), //Left side 40%
-        Expanded(child: DetailsPage(), flex:3) //Right side, 60%
+        Expanded(flex:2,child: listPage()    ), //Left side 40%
+        Expanded(flex:5,child: detailsPage() ) //Right side, 60%
       ]);
     }
     else{ //Portrait mode / Phone
-      if( selectedItem== null)
-        return ListPage(); //show the list
-      else
-        return DetailsPage(); //show the details
+      if( selectedItem== null) {
+        return listPage(); //show the list
+      } else {
+        return detailsPage(); //show the details
+      }
     }
   }
 
-  Widget DetailsPage() {
+  Widget detailsPage() {
     if(selectedItem != null){
-      return Center(child:Column( children: [
+      return Center(child:Column(mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+        Text("ID: ${selectedItem!.id}", style: TextStyle(fontSize: 40.0),),
         Text("Name: ${selectedItem!.name}", style: TextStyle(fontSize: 40.0),),
         Text("Quantity: ${selectedItem!.quantity}", style: TextStyle(fontSize: 40.0)),
         Spacer(),//balloon that expands to fill the space
         OutlinedButton(onPressed: (){
-          setState(() { selectedItem = null; });
+          setState(() {
+            list1.remove(selectedItem);
+            itemDAO.deleteItem(selectedItem!); //
+            selectedItem = null; });
         }, child: Text("Delete")),
 
 
@@ -161,7 +167,7 @@ class _MyHomePageState extends State<MyHomePage> {
           setState(() { selectedItem = null; });
         }, child: Text("Close"))
 
-      ], mainAxisAlignment: MainAxisAlignment.center,)
+      ], )
       ); //show what's been selected
     }
     else{
@@ -169,67 +175,79 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
-  Widget ListPage()
-  {
+  Widget listPage() {
     return Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: [
-          Row( mainAxisAlignment: MainAxisAlignment.spaceBetween, children:[
-            Flexible(
-                flex:1,
-                child: ElevatedButton( child:Text("Add item"), onPressed:() {
+      children: [
+
+        // 🔥 输入区（关键）
+        Row(
+          children: [
+
+            // 按钮
+            Expanded(
+              flex: 2,
+              child: ElevatedButton(
+                child: Text("Add"),
+                onPressed: () {
                   setState(() {
-                    //Unique IDs
-                    Item newItem = Item(Item.ID++, 1, _controller.value.text);
 
-                    itemDAO.insertItem(newItem);//insert to database
+                    int quantity =
+                        int.tryParse(_quantityController.text) ?? 1;
+
+                    Item newItem = Item(
+                      Item.ID++,
+                      quantity,
+                      _controller.text,
+                    );
+
+                    itemDAO.insertItem(newItem);
                     list1.add(newItem);
-                    _controller.text = "";
-                  });
-                } )
 
+                    _controller.text = "";
+                    _quantityController.text = "";
+                  });
+                },
+              ),
             ),
 
-            Flexible( flex:4, child:TextField(controller: _controller ))
-          ]),
+            // 名字输入框
+            Expanded(
+              flex: 4,
+              child: TextField(
+                controller: _controller,
+                decoration: InputDecoration(labelText: "Item Name"),
+              ),
+            ),
 
-          Expanded(child:
-          ListView.builder(
-              itemCount: list1.length,
-              itemBuilder:(context, rowNum) =>
-                  GestureDetector(child:Text("Row $rowNum, Name: ${list1[rowNum].name} Quantity: ${list1[rowNum].quantity }") ,
+            // 🔥 数量输入框（就在这里！！）
+            Expanded(
+              flex: 3,
+              child: TextField(
+                controller: _quantityController,
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(labelText: "Quantity"),
+              ),
+            ),
+          ],
+        ),
 
-                      onTap: () {
-                        setState(() {  selectedItem = list1[rowNum]; });
-                      },
-
-
-                      onLongPress: () {
-                        showDialog<String>(
-                            context: context,
-                            builder: (BuildContext context) => AlertDialog(
-                              title: const Text('Delete this?'),
-                              content: const Text('are you sure?'),
-                              actions: <Widget>[
-                                FilledButton(child:Text("Yes"), onPressed:() {
-                                  setState(() {
-                                    list1.removeAt(rowNum);
-                                  });
-
-                                  Navigator.pop(context);
-                                }),
-                                FilledButton(child:Text("Cancel"), onPressed:() {
-                                  Navigator.pop(context);
-
-                                }),
-                              ],
-                            )
-                        );
-
-                      })
-          )
-          )
-        ]);
-  }
-}
+        // 列表
+        Expanded(
+          child: ListView.builder(
+            itemCount: list1.length,
+            itemBuilder: (context, rowNum) {
+              return GestureDetector(
+                child: Text(
+                    "Row $rowNum,ID: ${list1[rowNum].id}, Name: ${list1[rowNum].name}, Qty: ${list1[rowNum].quantity}"),
+                onTap: () {
+                  setState(() {
+                    selectedItem = list1[rowNum];
+                  });
+                },
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }}
